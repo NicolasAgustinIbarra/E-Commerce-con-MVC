@@ -16,7 +16,10 @@ namespace CapaNegocio
         {
             return objCapaDatos.listar();
         }
-
+        public List<Producto> listarTodos()
+        {
+            return objCapaDatos.ListarTodosProductosDetallado();
+        }
         public int Registrar(Producto obj, out string mensaje)
         {
             mensaje = string.Empty;

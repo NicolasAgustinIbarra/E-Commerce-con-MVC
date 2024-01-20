@@ -13,6 +13,74 @@ namespace Data_Access
 {
     public class CD_Producto
     {
+        public List<Producto> ListarTodosProductosDetallado()
+        {
+            List<Producto> listaProductos = new List<Producto>();
+
+            try
+            {
+                using (SqlConnection conexion = new SqlConnection(Conexion.cn))
+                {
+                    string query = @"
+                SELECT 
+                    p.IdProducto, p.Nombre, p.Descripcion,
+                    m.IdMarca, m.Descripcion AS DesMarca, 
+                    c.IdCategoria, c.Descripcion AS DesCategoria,
+                    p.Peso, p.Activo, p.FechaVencimiento, p.Precio, p.Stock,
+                    p.Sabor, p.RutaImagen, p.NombreImagen
+                FROM 
+                    PRODUCTO p
+                    INNER JOIN MARCA m ON m.IdMarca = p.IdMarca
+                    INNER JOIN CATEGORIA c ON c.IdCategoria = p.IdCategoria";
+
+                    SqlCommand cmd = new SqlCommand(query, conexion);
+                    cmd.CommandType = CommandType.Text;
+
+                    conexion.Open();
+
+                    using (SqlDataReader reader = cmd.ExecuteReader())
+                    {
+                        while (reader.Read())
+                        {
+                            listaProductos.Add(new Producto()
+                            {
+                                IdProducto = Convert.ToInt32(reader["IdProducto"]),
+                                Nombre = reader["Nombre"].ToString(),
+                                Descripcion = reader["Descripcion"].ToString(),
+                                ObjMarca = new Marca
+                                {
+                                    IdMarca = Convert.ToInt32(reader["IdMarca"]),
+                                    Descripcion = reader["DesMarca"].ToString()
+                                },
+                                ObjCategoria = new Categoria
+                                {
+                                    IdCategoria = Convert.ToInt32(reader["IdCategoria"]),
+                                    Descripcion = reader["DesCategoria"].ToString()
+                                },
+                                Peso = Convert.ToDecimal(reader["Peso"]),
+                                Activo = Convert.ToBoolean(reader["Activo"]),
+                                FechaVencimiento = Convert.ToDateTime(reader["FechaVencimiento"]),
+                                Precio = Convert.ToDecimal(reader["Precio"], new CultureInfo("es-AR")),
+                                Stock = Convert.ToInt32(reader["Stock"]),
+                                Sabor = reader["Sabor"].ToString(),
+                                RutaImagen = reader["RutaImagen"].ToString(),
+                                NombreImagen = reader["NombreImagen"].ToString(),
+
+                            });
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // Manejar excepciones aquí, por ejemplo, registrar el error o lanzar una excepción personalizada.
+                throw ex;
+            }
+            // No necesitas abrir una nueva conexión aquí; esta se cierra automáticamente al salir del bloque "using".
+
+            return listaProductos;
+        }
+
         public List<Producto> listar()
         {
             List<Producto> listaProductos = new List<Producto>();

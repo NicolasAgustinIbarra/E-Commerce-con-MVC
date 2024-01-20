@@ -1,0 +1,205 @@
+﻿
+@{
+    ViewBag.Title = "Carrito";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container my-5">
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        @*Detalle del producto*@
+                        <div class="col-sm-9">
+                            <div class="me-2">
+                                <div class="d-flex justify-content-between">
+                                    <h5 class="ms-2 mt-2 ">Detalle Carrito</h5>
+                                    <a class="btn btn-primary" href="@Url.Action("Index","Tienda")"><i class="fas fa-cart-plus"></i> Seguir comprando</a>
+
+
+                                </div>
+                                <hr class="mt-2 mb-2" />
+
+                                <div id="productos-carrito">
+                                    <div class="card mb-2 card-producto">
+                                        <div class="card-body">
+                                            <div class="row">
+                                                <div class="col-sm-2 align-self-center d-flex justify-content-center  ">
+                                                    <img src="https://dummyimage.com/450x300/dee2e6/6c757d.jpg" style="width:100px; height:100px" class="rounded" alt="Alternate Text" />
+
+                                                </div>
+                                                <div class="col-sm-4 align-self-center">
+                                                    <span class="fw-bold d-block">Marca</span>
+                                                    <span>Nombre Producto</span>
+                                                </div>
+                                                <div class="col-sm-2 align-self-center ">
+                                                    <span>Precio: S/. 1500</span>
+                                                </div>
+                                                <div class="col-sm-2 align-self-center ">
+                                                    <div class="d-flex">
+                                                        <button class="btn btn-outline-secondary btn-restar rounded-0">
+                                                            <i class="fas fa-minus"></i>
+                                                        </button>
+                                                        <input type="text" class="form-control input-cantidad p-1 text-center rounded-0 " />
+                                                        <button class="btn btn-outline-secondary btn-sumar rounded-0">
+                                                            <i class="fas fa-plus"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-sm-2 align-self-center ">
+                                                    <button class="btn btn-outline-danger btn-eliminar rounded-0">
+                                                        <i class="fas fa-trash"></i> Eliminar
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="d-flex justify-content-end ">
+                                    <label class="align-self-center">
+                                        <b>Total: S/. <span id="lblTotal">0</span></b>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        @*Detalle de envio*@
+                        <div class="col-sm-3">
+                            <div class="row">
+                                <div class="card-body bg-light">
+                                    <div class="card-title">
+                                        <h5 class="mt-2">Detalle del envío</h5>
+                                        <form action="/" method="post" autocomplete="on">
+                                            <div class="mb-2">
+                                                <label class="form-label">
+                                                    Provincia:
+                                                    <input type="text" class="form-control form-control-sm" name="txtprovincia" id="txtProvincia" value="" />
+                                                </label>
+                                                <label class="form-label">
+                                                    Ciudad:
+                                                    <input type="text" class="form-control form-control-sm" name="txtciudad" id="txtCiudad" value="" />
+                                                </label>
+                                                <label class="form-label">
+                                                    Dirección:
+                                                    <input type="text" class="form-control form-control-sm" name="txtdireccion" id="txtDireccion" value="" />
+                                                </label>
+                                                <label class="form-label">
+                                                    Código postal:
+                                                    <input type="text" class="form-control form-control-sm" name="txtcodigopostal" id="txtCodigoPostal" value="" />
+                                                </label>
+                                                <label class="form-label">
+                                                    Número de teléfono:
+                                                    <input type="number" class="form-control form-control-sm" name="txttelefono" id="txtNumeroTelefono" value="" />
+                                                </label>
+                                                <div class="d-sm-grid">
+                                                    <button class="btn btn-success" type="button" onclick="RealizarPago()">
+                                                        <i class="fa fa-money"></i> Procesar pago
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div class="mb-2">
+
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    <script>
+
+        $(document).ready(function () {
+            $.ajax({
+                url: '@Url.Action("ListarProductosCarrito","Tienda")',
+                type: "POST",
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function (response) {
+                    $("#productos-carrito").html("");
+                    
+
+                    $.each(response.data, function (i, item) {
+
+
+                        $("<div>").addClass("card mb-2 card-producto").append(
+                            $("<div>").addClass("card-body").append(
+                                $("<div>").addClass("row").append(
+                                    // Column 1
+                                    $("<div>").addClass("col-sm-2 align-self-center d-flex justify-content-center").append(
+                                        $("<img>").addClass("rounded").attr({ "src": "data:image/" + item.objProducto.Extension + ";base64," + item.objProducto.Base64, "style": "width:100px; height:100px" }).attr("alt", "Product Image")
+                                    ),
+
+                                    // Column 2
+                                    $("<div>").addClass("col-sm-4 align-self-center").append(
+                                        $("<span>").addClass("fw-bold d-block").text(item.objProducto.ObjMarca.Descripcion),
+                                        $("<span>").text(item.objProducto.Nombre)
+                                    ),
+
+                                    // Column 3
+                                    $("<div>").addClass("col-sm-2 align-self-center").append(
+                                        $("<span>").text("Precio: $ " + item.objProducto.Precio)
+                                    ),
+
+                                    // Column 4
+                                    $("<div>").addClass("col-sm-2 align-self-center").append(
+                                        $("<div>").addClass("d-flex").append(
+                                            $("<button>").addClass("btn btn-outline-secondary btn-restar rounded-0").append(
+                                                $("<i>").addClass("fas fa-minus")
+                                            ),
+                                            $("<input>").attr({ "type": "text", "class": "form-control input-cantidad p-1 text-center rounded-0" }).data("objProducto", item.objProducto).val(item.Cantidad),
+                                            $("<button>").addClass("btn btn-outline-secondary btn-sumar rounded-0").append(
+                                                $("<i>").addClass("fas fa-plus")
+                                            )
+                                        )
+                                    ),
+
+                                    // Column 5
+                                    $("<div>").addClass("col-sm-2 align-self-center").append(
+                                        $("<button>").addClass("btn btn-outline-danger btn-eliminar rounded-0").append(
+                                            $("<i>").addClass("fas fa-trash")
+                                        ).text("Eliminar")
+                                    )
+                                )
+                            )
+                        ).appendTo("#productos-carrito");
+
+
+                    })
+
+                    sumarTotal();
+                }
+            })
+
+
+        })
+
+        function sumarTotal() {
+            let sumarTotal = parseFloat(0);
+
+            $("input.input-cantidad").each(function(i) {
+
+                let precio = $(this).data("objProducto").Precio;
+                let cantidad = parseFloat($(this).val())
+
+                let subtotal = precio * cantidad;
+
+                sumarTotal += subtotal;
+
+            })
+
+            $("#lblTotal").text(sumarTotal.toFixed(2))
+            $("#lblTotal").data("sumatotal",sumarTotal)
+
+        }
+
+    </script>
+}

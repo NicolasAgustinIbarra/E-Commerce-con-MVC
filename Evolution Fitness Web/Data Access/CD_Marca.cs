@@ -185,17 +185,16 @@ namespace Data_Access
             {
                 using (SqlConnection conexion = new SqlConnection(Conexion.cn))
                 {
-                   StringBuilder sb = new StringBuilder();
-                    sb.AppendLine("select distinct m.IdMarca, m.Descripcion from PRODUCTO p");
-                    sb.AppendLine("inner join CATEGORIA c on c.IdCategoria = p.IdCategoria");
-                    sb.AppendLine("inner join MARCA m on m.IdMarca = p.IdMarca and m.Activo = 1");
-                    sb.AppendLine("where c.IdCategoria = iif(@idcategoria = 0, c.IdCategoria, @idcategoria)");
-            
+                    string query = @"
+                SELECT DISTINCT m.IdMarca, m.Descripcion
+                FROM PRODUCTO p
+                INNER JOIN CATEGORIA c ON c.IdCategoria = p.IdCategoria
+                INNER JOIN MARCA m ON m.IdMarca = p.IdMarca AND m.Activo = 1
+                WHERE c.IdCategoria = IIF(@idcategoria = 0, c.IdCategoria, @idcategoria)";
 
-                    SqlCommand cmd = new SqlCommand(sb.ToString(), conexion);
+                    SqlCommand cmd = new SqlCommand(query, conexion);
                     cmd.Parameters.AddWithValue("@idcategoria", idcategoria);
                     cmd.CommandType = CommandType.Text;
-                    
 
                     conexion.Open();
 
@@ -206,28 +205,24 @@ namespace Data_Access
                             listaMarca.Add(new Marca()
                             {
                                 IdMarca = Convert.ToInt32(reader["IdMarca"]),
-                             
                                 Descripcion = reader["Descripcion"].ToString()
                             });
                         }
                     }
                 }
-
             }
             catch (Exception ex)
             {
+                // Log the exception details.
+                Console.WriteLine($"Error en listarmarcaporcategoria: {ex}");
 
-                throw ex;
-            }
-            finally
-            {
-                SqlConnection conexion = new SqlConnection(Conexion.cn);
-                conexion.Close();
+                // Puedes lanzar una nueva excepción personalizada o manejarla de otra manera según sea necesario.
+                throw new Exception("Ocurrió un error al obtener las marcas.", ex);
             }
 
             return listaMarca;
-
         }
-    }
 
+
+    }
 }
