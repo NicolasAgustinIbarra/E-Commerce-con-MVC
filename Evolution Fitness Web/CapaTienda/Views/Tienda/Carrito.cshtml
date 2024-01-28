@@ -85,9 +85,11 @@
                                                     Dirección:
                                                     <input type="text" class="form-control form-control-sm" name="txtdireccion" id="txtDireccion" value="" />
                                                 </label>
+                                               
+
                                                 <label class="form-label">
-                                                    Código postal:
-                                                    <input type="text" class="form-control form-control-sm" name="txtcodigopostal" id="txtCodigoPostal" value="" />
+                                                    Contacto:
+                                                    <input type="text" class="form-control form-control-sm" name="txtContacto" id="txtContacto" value="" />
                                                 </label>
                                                 <label class="form-label">
                                                     Número de teléfono:
@@ -125,55 +127,61 @@
                 contentType: "application/json; charset=utf-8",
                 success: function (response) {
                     $("#productos-carrito").html("");
+
                     
 
-                    $.each(response.data, function (i, item) {
+                        $.each(response.data, function (i, item) {
 
-
-                        $("<div>").addClass("card mb-2 card-producto").append(
-                            $("<div>").addClass("card-body").append(
-                                $("<div>").addClass("row").append(
-                                    // Column 1
-                                    $("<div>").addClass("col-sm-2 align-self-center d-flex justify-content-center").append(
-                                        $("<img>").addClass("rounded").attr({ "src": "data:image/" + item.objProducto.Extension + ";base64," + item.objProducto.Base64, "style": "width:100px; height:100px" }).attr("alt", "Product Image")
-                                    ),
-
-                                    // Column 2
-                                    $("<div>").addClass("col-sm-4 align-self-center").append(
-                                        $("<span>").addClass("fw-bold d-block").text(item.objProducto.ObjMarca.Descripcion),
-                                        $("<span>").text(item.objProducto.Nombre)
-                                    ),
-
-                                    // Column 3
-                                    $("<div>").addClass("col-sm-2 align-self-center").append(
-                                        $("<span>").text("Precio: $ " + item.objProducto.Precio)
-                                    ),
-
-                                    // Column 4
-                                    $("<div>").addClass("col-sm-2 align-self-center").append(
-                                        $("<div>").addClass("d-flex").append(
-                                            $("<button>").addClass("btn btn-outline-secondary btn-restar rounded-0").append(
-                                                $("<i>").addClass("fas fa-minus")
+                            if (item.objProducto) {
+                                $("<div>").addClass("card mb-2 card-producto").append(
+                                    $("<div>").addClass("card-body").append(
+                                        $("<div>").addClass("row").append(
+                                            // Column 1
+                                            $("<div>").addClass("col-sm-2 align-self-center d-flex justify-content-center").append(
+                                                $("<img>").addClass("rounded").attr({ "src": "data:image/" + item.objProducto.Extension + ";base64," + item.objProducto.Base64, "style": "width:100px; height:100px" }).attr("alt", "Product Image")
                                             ),
-                                            $("<input>").attr({ "type": "text", "class": "form-control input-cantidad p-1 text-center rounded-0" }).data("objProducto", item.objProducto).val(item.Cantidad),
-                                            $("<button>").addClass("btn btn-outline-secondary btn-sumar rounded-0").append(
-                                                $("<i>").addClass("fas fa-plus")
+
+                                            // Column 2
+                                            $("<div>").addClass("col-sm-4 align-self-center").append(
+                                                $("<span>").addClass("fw-bold d-block").text(item.objProducto.ObjMarca.Descripcion),
+                                                $("<span>").text(item.objProducto.Nombre)
+                                            ),
+
+                                            // Column 3
+                                            $("<div>").addClass("col-sm-2 align-self-center").append(
+                                                $("<span>").text("Precio: $ " + item.objProducto.Precio)
+                                            ),
+
+                                            // Column 4
+                                            $("<div>").addClass("col-sm-2 align-self-center").append(
+                                                $("<div>").addClass("d-flex").append(
+                                                    $("<button>").addClass("btn btn-outline-secondary btn-restar rounded-0").append(
+                                                        $("<i>").addClass("fas fa-minus")
+                                                    ),
+                                                    $("<input>").attr({ "type": "text", "class": "form-control input-cantidad p-1 text-center rounded-0" }).data("objProducto", item.objProducto).val(item.Cantidad),
+                                                    $("<button>").addClass("btn btn-outline-secondary btn-sumar rounded-0").append(
+                                                        $("<i>").addClass("fas fa-plus")
+                                                    )
+                                                )
+                                            ),
+
+                                            // Column 5
+                                            $("<div>").addClass("col-sm-2 align-self-center").append(
+                                                $("<button>").addClass("btn btn-outline-danger btn-eliminar rounded-0").append(
+                                                    $("<i>").addClass("fas fa-trash")
+                                                ).text("Eliminar").data("IdProducto", item.objProducto.IdProducto)
                                             )
                                         )
-                                    ),
-
-                                    // Column 5
-                                    $("<div>").addClass("col-sm-2 align-self-center").append(
-                                        $("<button>").addClass("btn btn-outline-danger btn-eliminar rounded-0").append(
-                                            $("<i>").addClass("fas fa-trash")
-                                        ).text("Eliminar")
                                     )
-                                )
-                            )
-                        ).appendTo("#productos-carrito");
+                                ).appendTo("#productos-carrito");
 
+                            } else {
+                                // Manejo de la situación donde item.objProducto es null o undefined
+                                console.error("Advertencia: item.objProducto es null o undefined");
 
-                    })
+                            }    
+                        })
+                   
 
                     sumarTotal();
                 }
@@ -198,6 +206,175 @@
 
             $("#lblTotal").text(sumarTotal.toFixed(2))
             $("#lblTotal").data("sumatotal",sumarTotal)
+
+        }
+
+        $(document).on("click", ".btn-sumar", function () {
+
+            let div_contenedor = $(this).parent("div.d-flex");
+            let input_cantidad = $(div_contenedor).find("input.input-cantidad");
+            let btn = $(this);
+
+
+
+            let idproducto = $(input_cantidad).data("objProducto").IdProducto;
+
+
+
+
+
+
+
+
+                $.ajax({
+                    url: '@Url.Action("OperacionCarrito","Tienda")',
+                    type: "POST",
+                    data: JSON.stringify({ idproducto: idproducto, sumar: true }),
+                    dataType: "json",
+                    contentType: "application/json; charset=utf-8",
+                    success: function (data) {
+                        if (data.respuesta) {
+                            let cantidad = parseInt($(input_cantidad).val()) + 1;
+                            $(input_cantidad).val(cantidad);
+                            sumarTotal();
+                        } else {
+                            swal("", data.mensaje, "warning");
+                        }
+                    },
+                });
+
+        });
+
+        $(document).on("click", ".btn-restar", function () {
+
+            let div_contenedor = $(this).parent("div.d-flex");
+            let input_cantidad = $(div_contenedor).find("input.input-cantidad");
+            let btn = $(this);
+
+
+
+            let idproducto = $(input_cantidad).data("objProducto").IdProducto;
+
+
+            let cantidad = parseInt($(input_cantidad).val()) - 1;
+
+
+            if (cantidad >= 1) {
+
+                $.ajax({
+                    url: '@Url.Action("OperacionCarrito","Tienda")',
+                    type: "POST",
+                    data: JSON.stringify({ idproducto: idproducto, sumar: false }),
+                    dataType: "json",
+                    contentType: "application/json; charset=utf-8",
+                    success: function (data) {
+                        if (data.respuesta) {
+
+                            $(input_cantidad).val(cantidad);
+                            sumarTotal();
+                        } else {
+                            swal("", data.mensaje, "warning");
+                        }
+                    },
+                })
+            }
+
+        });
+
+        $(document).on("click", ".btn-eliminar", function () {
+
+           
+
+            let idproducto = $(this).data("IdProducto");
+
+            let card_producto = $(this).parents("div .card-producto")
+
+           
+
+                $.ajax({
+                    url: '@Url.Action("EliminarCarrito", "Tienda")',
+                    type: "POST",
+                    data: JSON.stringify({ idproducto: idproducto}),
+                    dataType: "json",
+                    contentType: "application/json; charset=utf-8",
+                    success: function (data) {
+                        if (data.respuesta) {
+
+                            card_producto.remove();
+                            MostrarCantidadCarrito();
+                            sumarTotal();
+                        } else {
+                            swal("", data.mensaje, "warning");
+                        }
+                    },
+                })
+               
+
+        });
+
+
+        function RealizarPago() {
+            var totalCantidad = 0;
+
+            $("input.input-cantidad").each(function () {
+                totalCantidad += parseInt($(this).val()) || 0;
+            });
+
+            if (totalCantidad === 0) {
+                swal("", "No existen productos en el carrito", "warning");
+                return;
+            }
+
+            
+
+            if ($("#txtProvincia").val() == "" || $("#txtCiudad").val() == "" || $("#txtDireccion").val() == "" || $("#txtContacto").val() == "" ||  $("#txtNumeroTelefono").val() == "") {
+                swal("", "Debe completar todos los detalles de envío", "warning");
+                return
+            }
+
+
+            var venta = {
+                TotalProducto: $("input.input-cantidad").length,
+                MontoTotal: 0,
+                Contacto: $("#txtContacto").val(),
+                Provincia: $("#txtProvincia").val(),
+                Ciudad: $("#txtCiudad").val(),
+                Direccion: $("#txtDireccion").val(),
+                Telefono: $("#txtNumeroTelefono").val()
+
+            }
+
+            var lista_carrito = [];
+            $("input.input-cantidad").each(function (i) {
+                var producto = $(this).data("objProducto");
+                var cantidad = parseFloat($(this).val());
+
+                lista_carrito.push({
+                    objProducto: producto,
+                    Cantidad: cantidad
+                })
+
+            })
+
+            $.ajax({
+                url: '@Url.Action("ProcesarPago", "Tienda")',
+                type: "POST",
+                data: JSON.stringify({ oListaCarrito: lista_carrito, oVenta: venta }),
+                dataType: "json",
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+                    if (data.status) {
+                        window.location.href = data.link;
+                    }
+                    else {
+                        swal("", "Vuelva a intentarlo mas tarde", "warning");
+                    }
+                }
+
+
+
+
+            })
 
         }
 

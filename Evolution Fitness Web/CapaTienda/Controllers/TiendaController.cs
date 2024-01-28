@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 
@@ -184,7 +187,12 @@ namespace CapaTienda.Controllers
                     Base64 = CN_Recursos.ConvertirBase64(Path.Combine(oc.objProducto.RutaImagen, oc.objProducto.NombreImagen), out conversion),
                     Extension = Path.GetExtension(oc.objProducto.NombreImagen)
                 },
-                Cantidad = oc.Cantidad
+                Cantidad = oc.Cantidad,
+                IdProducto = oc.IdProducto,
+                IdCarrito = oc.IdCarrito,
+                IdCliente = oc.IdCliente,
+
+
             }).ToList();
 
             return Json(new { data = lista }, JsonRequestBehavior.AllowGet);
@@ -208,7 +216,7 @@ namespace CapaTienda.Controllers
         }
 
         [HttpPost]
-        public  JsonResult EliminarCarrito(int idproducto)
+        public JsonResult EliminarCarrito(int idproducto)
         {
             int idcliente = ((Cliente)Session["Cliente"]).IdCliente;
 
@@ -219,11 +227,85 @@ namespace CapaTienda.Controllers
 
             return Json(new { respuesta = respuesta, mensaje = mensaje }, JsonRequestBehavior.AllowGet);
         }
-        
 
-        public  ActionResult Carrito()
+
+        public ActionResult Carrito()
         {
             return View();
         }
+
+
+        [HttpPost]
+        public async Task<JsonResult> ProcesarPago(List<Carrito> oListaCarrito, Venta oVenta)
+        {
+            decimal total = 0;
+
+            DataTable detalle_venta = new DataTable();
+
+            detalle_venta.Locale = new CultureInfo("es-AR");
+            detalle_venta.Columns.Add("IdProducto", typeof(string));
+            detalle_venta.Columns.Add("Cantidad", typeof(int));
+            detalle_venta.Columns.Add("Total", typeof(decimal));
+
+            
+                foreach (Carrito oCarrito in oListaCarrito)
+                {
+                    // Verificar si oCarrito.objProducto es null
+                    if (oCarrito.objProducto != null && oCarrito.objProducto.Precio != null)
+                    {
+                        decimal subTotal = Convert.ToDecimal(oCarrito.Cantidad.ToString()) * oCarrito.objProducto.Precio;
+
+                        total += subTotal;
+
+                        detalle_venta.Rows.Add(new object[]
+                        {
+                            oCarrito.objProducto.IdProducto,
+                            oCarrito.Cantidad,
+                            subTotal
+                        });
+                    }
+                    else
+                    {
+                        // Manejo de la situación donde oCarrito.objProducto es null
+                        // Puedes registrar un mensaje de error, ignorar este carrito, etc.
+                        Console.WriteLine("Advertencia: oCarrito.objProducto es null");
+                    }
+                }
+
+
+            
+
+            oVenta.MontoTotal = total;
+            oVenta.IdCliente.IdCliente = ((Cliente)Session["Cliente"]).IdCliente;
+
+            TempData["Venta"] = oVenta;
+            TempData["DetalleVenta"] = detalle_venta;
+
+            return Json(new { status = true, Link = "/Tienda/PagoEfectuado?idTransaccion=code0001&status=true" }, JsonRequestBehavior.AllowGet);
+
+        }
+
+        public async Task<ActionResult> PagoEfectuado()
+        {
+            string idtransaccion = Request.QueryString["idTransaccion"];
+            bool status = Convert.ToBoolean( Request.QueryString["status"]);
+
+            ViewData["status"] = status;
+
+            if (status)
+            {
+                Venta oVenta = (Venta)TempData["Venta"];
+                DataTable detalle_venta = (DataTable)TempData["DetalleVenta"];
+
+                string mensaje = string.Empty;
+
+                bool respuesta = new CN_Venta().Registrar(oVenta, detalle_venta, out mensaje);
+
+                ViewData["idTransaccion"] = idtransaccion;
+            }
+
+            return View();
+        }
     }
+
 }

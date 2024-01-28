@@ -49,25 +49,25 @@ namespace Data_Access
                                 Descripcion = reader["Descripcion"].ToString(),
                                 ObjMarca = new Marca
                                 {
-                                    IdMarca = Convert.ToInt32(reader["IdMarca"]),
+                                    IdMarca = reader["IdMarca"] == DBNull.Value ? 0 : Convert.ToInt32(reader["IdMarca"]),
                                     Descripcion = reader["DesMarca"].ToString()
                                 },
                                 ObjCategoria = new Categoria
                                 {
-                                    IdCategoria = Convert.ToInt32(reader["IdCategoria"]),
+                                    IdCategoria = reader["IdCategoria"] == DBNull.Value ? 0 : Convert.ToInt32(reader["IdCategoria"]),
                                     Descripcion = reader["DesCategoria"].ToString()
                                 },
-                                Peso = Convert.ToDecimal(reader["Peso"]),
-                                Activo = Convert.ToBoolean(reader["Activo"]),
-                                FechaVencimiento = Convert.ToDateTime(reader["FechaVencimiento"]),
-                                Precio = Convert.ToDecimal(reader["Precio"], new CultureInfo("es-AR")),
-                                Stock = Convert.ToInt32(reader["Stock"]),
+                                Peso = reader["Peso"] == DBNull.Value ? 0 : Convert.ToDecimal(reader["Peso"]),
+                                Activo = reader["Activo"] == DBNull.Value ? false : Convert.ToBoolean(reader["Activo"]),
+                                FechaVencimiento = reader["FechaVencimiento"] == DBNull.Value ? DateTime.MinValue : Convert.ToDateTime(reader["FechaVencimiento"]),
+                                Precio = reader["Precio"] == DBNull.Value ? 0 : Convert.ToDecimal(reader["Precio"], new CultureInfo("es-AR")),
+                                Stock = reader["Stock"] == DBNull.Value ? 0 : Convert.ToInt32(reader["Stock"]),
                                 Sabor = reader["Sabor"].ToString(),
                                 RutaImagen = reader["RutaImagen"].ToString(),
                                 NombreImagen = reader["NombreImagen"].ToString(),
-
                             });
                         }
+
                     }
                 }
             }
@@ -115,7 +115,8 @@ namespace Data_Access
                                 ObjMarca = new Marca { IdMarca = Convert.ToInt32(reader["IdMarca"]), Descripcion = reader["DesMarca"].ToString() },
                                 ObjCategoria = new Categoria { IdCategoria = Convert.ToInt32(reader["IdCategoria"]), Descripcion = reader["DesCategoria"].ToString() },
                                 Peso = Convert.ToDecimal(reader["Peso"]),
-                                Activo = Convert.ToBoolean(reader["Activo"]),
+                                Activo = reader.IsDBNull(reader.GetOrdinal("Activo")) ? (bool?)null : Convert.ToBoolean(reader["Activo"]),
+
                                 FechaVencimiento = Convert.ToDateTime(reader["FechaVencimiento"]),
                                 Precio = Convert.ToDecimal(reader["Precio"],
                                 new CultureInfo("es-AR")),

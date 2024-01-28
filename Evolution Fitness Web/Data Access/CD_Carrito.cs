@@ -164,6 +164,10 @@ namespace Data_Access
 
                                 },
                                 Cantidad = Convert.ToInt32(reader["Cantidad"]),
+                                IdCarrito = Convert.ToInt32(reader["IdCarrito"]),
+                                IdProducto = Convert.ToInt32(reader["IdProducto"]),
+                                IdCliente = Convert.ToInt32(reader["IdCliente"])
+
 
 
                             });

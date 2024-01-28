@@ -11,8 +11,8 @@ namespace CapaEntidad
         public Producto objProducto;
 
         public int IdCarrito { get; set; }
-        public Cliente IdCliente { get; set; }
-        public Producto IdProducto { get; set; }
+        public int IdCliente { get; set; }
+        public int IdProducto { get; set; }
         public int Cantidad { get; set; }
 
 
